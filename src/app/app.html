@@ -41,6 +41,15 @@
       <button class="btn-primary" (click)="scrollTo('unete')">Únete al club</button>
       <button class="btn-outline" (click)="scrollTo('nosotros')">Conoce más</button>
     </div>
+    <button class="birthday-alert" type="button" (click)="scrollTo('cumpleanos')">
+      <span class="birthday-alert-icon">🎂</span>
+      <span class="birthday-alert-copy">
+        <span class="birthday-alert-label">{{ birthdayBannerLabel }}</span>
+        <strong class="birthday-alert-title">{{ birthdayBannerTitle }}</strong>
+        <span class="birthday-alert-subtitle">{{ birthdayBannerSubtitle }}</span>
+      </span>
+      <span class="birthday-alert-link">Ver calendario</span>
+    </button>
   </div>
   <div class="hero-scroll-hint" (click)="scrollTo('nosotros')">
     <span>Scroll</span>
@@ -112,6 +121,121 @@
   </div>
 </section>
 
+<!-- ======== CUMPLEAÑOS ======== -->
+<section id="cumpleanos" class="birthdays">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Alertas</span>
+      <h2 class="section-title">Cumpleaños <em>del club</em></h2>
+    </div>
+
+    <div class="birthday-banner">
+      <div class="birthday-banner-copy">
+        <p class="birthday-banner-label">{{ birthdayBannerLabel }}</p>
+        <h3>{{ birthdayBannerTitle }}</h3>
+        <p>{{ birthdayBannerSubtitle }}</p>
+      </div>
+
+      <div class="birthday-banner-stats">
+        <div>
+          <strong>{{ birthdayToday.length }}</strong>
+          <span>Hoy</span>
+        </div>
+        <div>
+          <strong>{{ birthdayUpcoming.length }}</strong>
+          <span>Próx. 30 días</span>
+        </div>
+        <div>
+          <strong>{{ birthdayThisMonthCount }}</strong>
+          <span>Este mes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="birthday-grid">
+      <article class="birthday-card birthday-card--featured">
+        <div class="birthday-card-header">
+          <span class="birthday-card-tag">Celebración de hoy</span>
+          <span class="birthday-card-count">{{ birthdayToday.length }}</span>
+        </div>
+
+        @if (birthdayToday.length) {
+          <div class="birthday-list">
+            @for (person of birthdayToday; track person.name) {
+              <div class="birthday-person">
+                <div class="birthday-avatar">{{ getInitials(person.name) }}</div>
+                <div class="birthday-person-main">
+                  <h3>{{ person.name }}</h3>
+                  <p>{{ person.role }} · {{ person.ride }}</p>
+                </div>
+                <div class="birthday-person-meta">
+                  <strong>{{ person.age }} años</strong>
+                  <span>Hoy</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="birthday-empty">
+            <strong>Hoy no hay cumpleaños registrados</strong>
+            <p>Cuando cargues la lista real, el banner se activará automáticamente aquí.</p>
+          </div>
+        }
+      </article>
+
+      <article class="birthday-card">
+        <div class="birthday-card-header">
+          <span class="birthday-card-tag">Próximos 30 días</span>
+          <span class="birthday-card-count">{{ birthdayUpcoming.length }}</span>
+        </div>
+
+        @if (birthdayUpcoming.length) {
+          <div class="birthday-upcoming-list">
+            @for (person of birthdayUpcoming; track person.name) {
+              <div class="birthday-upcoming-item">
+                <div>
+                  <h3>{{ person.name }}</h3>
+                  <p>{{ person.role }} · {{ person.ride }}</p>
+                </div>
+                <div class="birthday-upcoming-meta">
+                  <strong>{{ person.nextBirthdayLabel }}</strong>
+                  <span>{{ person.daysUntilBirthday }} días</span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="birthday-empty">
+            <strong>No hay cumpleaños próximos</strong>
+            <p>Agrega miembros al calendario para ver los avisos automáticos.</p>
+          </div>
+        }
+      </article>
+
+      <article class="birthday-card birthday-card--summary">
+        <div class="birthday-card-header">
+          <span class="birthday-card-tag">Resumen</span>
+        </div>
+
+        <div class="birthday-summary">
+          <div class="birthday-summary-item">
+            <span>Este mes</span>
+            <strong>{{ birthdayThisMonthCount }}</strong>
+          </div>
+          <div class="birthday-summary-item">
+            <span>Próximo saludo</span>
+            <strong>{{ birthdayNextHighlight }}</strong>
+          </div>
+          <div class="birthday-summary-item">
+            <span>Estado</span>
+            <strong>{{ birthdayBannerLabel }}</strong>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
 <!-- ======== EVENTOS ======== -->
 <section id="eventos" class="events">
   <div class="container">
@@ -119,20 +243,219 @@
       <span class="section-tag">Próximamente</span>
       <h2 class="section-title">Eventos &amp; <em>Rodadas</em></h2>
     </div>
+
     <div class="events-grid">
       @for (e of events; track e.title) {
-        <div class="event-card">
+        <article class="event-card" [class.selected]="selectedEvent === e">
           <div class="event-date-badge">{{ e.date }}</div>
           <div class="event-icon">{{ e.icon }}</div>
           <h3 class="event-title">{{ e.title }}</h3>
           <p class="event-desc">{{ e.description }}</p>
+
+          <div class="event-tags">
+            @for (tag of e.highlights; track tag) {
+              <span class="event-tag-chip">{{ tag }}</span>
+            }
+          </div>
+
           <div class="event-footer">
             <span class="event-km">{{ e.km }}</span>
-            <button class="btn-event">Ver detalles</button>
+            <button
+              class="btn-event"
+              type="button"
+              (click)="selectEvent(e)"
+              [class.active]="selectedEvent === e"
+            >
+              {{ selectedEvent === e ? 'Seleccionada' : 'Ver detalles' }}
+            </button>
           </div>
-        </div>
+        </article>
       }
     </div>
+
+    <section id="detalle-evento" class="event-detail-shell">
+      <div class="event-detail-head">
+        <div class="event-detail-copy">
+          <span class="event-detail-label">Detalle de rodada</span>
+          <div class="event-detail-badges">
+            <span class="event-detail-date">{{ selectedEvent.date }}</span>
+            <span class="event-detail-chip">{{ selectedEvent.duration }}</span>
+            <span class="event-detail-chip">{{ selectedEvent.difficulty }}</span>
+            <span class="event-detail-chip">{{ selectedEvent.terrain }}</span>
+          </div>
+          <h3>{{ selectedEvent.title }}</h3>
+          <p>{{ selectedEvent.routeSummary }}</p>
+        </div>
+
+        <div class="event-detail-actions">
+          <a
+            class="btn-event btn-event--solid"
+            [href]="getMapsUrl(selectedEvent)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Abrir en Maps
+          </a>
+          <button class="btn-event btn-event--ghost" type="button" (click)="scrollTo('unete')">
+            Avisar al club
+          </button>
+        </div>
+      </div>
+
+      <div class="event-detail-grid">
+        <article class="event-detail-card event-detail-card--info">
+          <div class="event-detail-pulse">
+            <div>
+              <span>Encuentro</span>
+              <strong>{{ selectedEvent.meetingTime }}</strong>
+            </div>
+            <div>
+              <span>Salida</span>
+              <strong>{{ selectedEvent.departureTime }}</strong>
+            </div>
+            <div>
+              <span>Llegada</span>
+              <strong>{{ selectedEvent.arrivalTime }}</strong>
+            </div>
+            <div>
+              <span>Distancia</span>
+              <strong>{{ selectedEvent.km }}</strong>
+            </div>
+          </div>
+
+          <div class="event-detail-block">
+            <h4>Lugar de encuentro</h4>
+            <p>{{ selectedEvent.meetingPoint }}</p>
+            <div class="event-detail-meta-line">
+              <span>Líder</span>
+              <strong>{{ selectedEvent.leader }}</strong>
+            </div>
+            <div class="event-detail-meta-line">
+              <span>Contacto</span>
+              <strong>{{ selectedEvent.contact }}</strong>
+            </div>
+          </div>
+
+          <div class="event-detail-block">
+            <h4>Puntos de ruta</h4>
+            <div class="event-route-list">
+              @for (point of selectedEvent.waypoints; track point.place) {
+                <div class="event-route-step">
+                  <span class="event-route-step-kind">{{ point.label }}</span>
+                  <strong>{{ point.place }}</strong>
+                  <p>{{ point.time }}</p>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="event-detail-block">
+            <h4>Lo que no puede faltar</h4>
+            <div class="event-essentials">
+              @for (item of selectedEvent.essentials; track item) {
+                <span>{{ item }}</span>
+              }
+            </div>
+          </div>
+
+          <div class="event-detail-note">
+            <strong>Consejo del líder</strong>
+            <p>{{ selectedEvent.notes }}</p>
+          </div>
+        </article>
+
+        <article class="event-detail-card event-detail-card--map">
+          <div class="event-map-header">
+            <div>
+              <span>Mapa de ruta</span>
+              <h4>{{ selectedEvent.routeSummary }}</h4>
+            </div>
+            <strong>{{ selectedEvent.km }}</strong>
+          </div>
+
+          <div class="event-map-canvas">
+            <svg
+              class="event-route-map"
+              viewBox="0 0 760 360"
+              role="img"
+              [attr.aria-label]="'Ruta de ' + selectedEvent.title"
+            >
+              <defs>
+                <linearGradient id="routeGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00e5ff" />
+                  <stop offset="100%" stop-color="#a020f0" />
+                </linearGradient>
+                <pattern id="routeGrid" width="48" height="48" patternUnits="userSpaceOnUse">
+                  <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+                </pattern>
+              </defs>
+
+              <rect x="0" y="0" width="760" height="360" rx="28" fill="rgba(8,8,12,0.72)" />
+              <rect x="0" y="0" width="760" height="360" rx="28" fill="url(#routeGrid)" opacity="0.9" />
+              <path
+                d="M 76 270 C 160 250, 202 196, 262 178 S 390 130, 438 132 S 572 108, 662 98"
+                fill="none"
+                stroke="rgba(255,255,255,0.08)"
+                stroke-width="18"
+                stroke-linecap="round"
+              />
+              <polyline
+                [attr.points]="getRoutePoints(selectedEvent)"
+                fill="none"
+                stroke="url(#routeGlow)"
+                stroke-width="5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-dasharray="14 10"
+              />
+
+              @for (point of selectedEvent.waypoints; track point.place) {
+                <g>
+                  <circle
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    [attr.r]="point.kind === 'start' ? 11 : point.kind === 'finish' ? 12 : 9"
+                    [attr.fill]="point.kind === 'start' ? '#00e5ff' : point.kind === 'finish' ? '#a020f0' : '#e0e0f0'"
+                  />
+                  <circle
+                    class="route-point-glow"
+                    [attr.cx]="point.x"
+                    [attr.cy]="point.y"
+                    [attr.r]="point.kind === 'start' ? 24 : point.kind === 'finish' ? 26 : 20"
+                  />
+                  <text class="route-point-label" [attr.x]="point.x + 16" [attr.y]="point.y - 10">
+                    {{ point.label }}
+                  </text>
+                  <text class="route-point-place" [attr.x]="point.x + 16" [attr.y]="point.y + 8">
+                    {{ point.place }}
+                  </text>
+                  <text class="route-point-time" [attr.x]="point.x + 16" [attr.y]="point.y + 24">
+                    {{ point.time }}
+                  </text>
+                </g>
+              }
+            </svg>
+          </div>
+
+          <div class="event-map-footer">
+            @for (point of selectedEvent.waypoints; track point.place) {
+              <div class="event-map-legend">
+                <span class="event-map-dot" [class.event-map-dot--finish]="point.kind === 'finish'"></span>
+                <div>
+                  <strong>{{ point.label }}</strong>
+                  <p>{{ point.place }}</p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="event-map-note">
+            Ruta sugerida para salir en caravana. Mantén distancia, respeta la marcha del líder y no
+            cortes el grupo en paradas.
+          </div>
+        </article>
+      </div>
+    </section>
   </div>
 </section>
 
